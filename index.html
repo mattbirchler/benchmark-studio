@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Benchmark Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f8f6f1;
+    --bg-card: #ffffff;
+    --text: #1a1a1a;
+    --text-muted: #6b6560;
+    --text-light: #9e9893;
+    --border: #e5e0d8;
+    --border-light: #eee9e2;
+    --rule: #d4cfc7;
+    --shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+    --shadow-hover: 0 2px 6px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.05);
+    --radius: 6px;
+    --device-1: #ff6b4a;
+    --device-2: #2d5bff;
+    --device-3: #f5a623;
+    --device-4: #00b4a0;
+    --device-5: #9b59b6;
+    --device-6: #e84393;
+    --device-7: #636e72;
+    --device-8: #00cec9;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Instrument Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    background-size: 256px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 32px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  header {
+    padding: 48px 0 40px;
+    border-bottom: 2px solid var(--text);
+  }
+
+  header h1 {
+    font-family: 'Instrument Sans', sans-serif;
+    font-weight: 700;
+    font-size: 42px;
+    letter-spacing: -1.5px;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  header p {
+    font-family: 'Source Serif 4', serif;
+    font-size: 17px;
+    color: var(--text-muted);
+    font-weight: 300;
+    letter-spacing: 0.2px;
+  }
+
+  /* Sections */
+  .import-section {
+    padding: 40px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .import-section h2 {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+  }
+
+  .import-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 28px;
+    animation: fadeUp 0.4s ease-out;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .import-row {
+    display: flex;
+    gap: 16px;
+    align-items: end;
+    flex-wrap: wrap;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .field label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+  }
+
+  .field input, .field select {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 15px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 220px;
+  }
+
+  .field input:focus, .field select:focus {
+    border-color: #2d5bff;
+    box-shadow: 0 0 0 3px rgba(45,91,255,0.1);
+  }
+
+  .btn {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 24px;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+  }
+
+  .btn-primary {
+    background: var(--text);
+    color: var(--bg);
+  }
+
+  .btn-primary:hover {
+    background: #333;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-secondary {
+    background: var(--bg);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--text-light);
+    color: var(--text);
+  }
+
+  .btn-danger {
+    background: none;
+    color: var(--text-light);
+    padding: 10px 16px;
+    font-weight: 500;
+  }
+
+  .btn-danger:hover { color: #e74c3c; }
+
+  /* Toggle switch */
+  .toggle-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .toggle-switch {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    margin-top: 4px;
+  }
+
+  .toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background: var(--border);
+    border-radius: 24px;
+    transition: background 0.2s;
+  }
+
+  .toggle-slider::before {
+    content: '';
+    position: absolute;
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.2s;
+  }
+
+  .toggle-switch input:checked + .toggle-slider {
+    background: #2d5bff;
+  }
+
+  .toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(20px);
+  }
+
+  .toggle-label-text {
+    font-size: 11px;
+    color: var(--text-light);
+    font-weight: 500;
+    margin-top: 2px;
+  }
+
+  /* Device / Benchmark Pills */
+  .devices-bar {
+    padding: 24px 0 0;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .device-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px 6px 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 500;
+    animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: box-shadow 0.2s;
+  }
+
+  .device-pill:hover { box-shadow: var(--shadow-hover); }
+
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.85); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .device-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .device-pill .remove-device,
+  .device-pill .toggle-visibility {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-light);
+    font-size: 16px;
+    line-height: 1;
+    padding: 0 0 0 4px;
+    transition: color 0.15s;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .device-pill .remove-device:hover { color: #e74c3c; }
+  .device-pill .toggle-visibility:hover { color: var(--text); }
+
+  .device-pill .toggle-visibility svg {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+  }
+
+  .device-pill.hidden-device { opacity: 0.45; }
+
+  .device-pill .device-name {
+    cursor: pointer;
+    border-bottom: 1px dashed transparent;
+    transition: border-color 0.15s;
+  }
+
+  .device-pill .device-name:hover { border-bottom-color: var(--text-light); }
+
+  .device-pill .rename-input {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1px 6px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    width: 120px;
+  }
+
+  .device-pill .rename-input:focus { border-color: #2d5bff; }
+
+  .pill-category {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-light);
+    background: var(--bg);
+    padding: 1px 6px;
+    border-radius: 3px;
+  }
+
+  .device-pill[draggable="true"] { cursor: grab; }
+  .device-pill[draggable="true"]:active { cursor: grabbing; }
+  .device-pill.dragging { opacity: 0.4; }
+  .device-pill.drag-over { box-shadow: -3px 0 0 0 var(--text); }
+
+  .drag-handle {
+    color: var(--text-light);
+    font-size: 11px;
+    margin-right: -2px;
+    user-select: none;
+    letter-spacing: -1px;
+  }
+
+  /* Score Matrix */
+  .matrix-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .score-matrix {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 14px;
+  }
+
+  .score-matrix th {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    padding: 10px 12px;
+    text-align: center;
+    border-bottom: 2px solid var(--border);
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    background: var(--bg-card);
+    z-index: 2;
+  }
+
+  .score-matrix th .unit-hint {
+    display: block;
+    font-size: 10px;
+    font-weight: 400;
+    color: var(--text-light);
+    text-transform: none;
+    letter-spacing: 0;
+    margin-top: 2px;
+    font-family: 'Source Serif 4', serif;
+    font-style: italic;
+  }
+
+  .score-matrix th:first-child {
+    text-align: left;
+    position: sticky;
+    left: 0;
+    z-index: 3;
+  }
+
+  .score-matrix td {
+    padding: 6px 12px;
+    border-bottom: 1px solid var(--border-light);
+    text-align: center;
+  }
+
+  .score-matrix td:first-child {
+    text-align: left;
+    font-weight: 500;
+    font-size: 13px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    position: sticky;
+    left: 0;
+    background: var(--bg-card);
+    z-index: 1;
+  }
+
+  .score-matrix .device-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .score-matrix .device-cell .device-dot {
+    width: 8px;
+    height: 8px;
+  }
+
+  .score-matrix input[type="number"] {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+    width: 100px;
+    padding: 6px 10px;
+    border: 1px solid var(--border-light);
+    border-radius: 4px;
+    background: var(--bg);
+    color: var(--text);
+    text-align: right;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -moz-appearance: textfield;
+  }
+
+  .score-matrix input[type="number"]::-webkit-inner-spin-button,
+  .score-matrix input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .score-matrix input[type="number"]:focus {
+    border-color: #2d5bff;
+    box-shadow: 0 0 0 3px rgba(45,91,255,0.1);
+  }
+
+  .matrix-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-light);
+  }
+
+  .matrix-empty {
+    text-align: center;
+    padding: 32px;
+    color: var(--text-light);
+    font-family: 'Source Serif 4', serif;
+    font-size: 15px;
+    font-style: italic;
+  }
+
+  /* Charts Section */
+  .charts-section {
+    padding: 48px 0 80px;
+  }
+
+  .charts-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .charts-header h2 {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+  }
+
+  .chart-count {
+    font-family: 'Source Serif 4', serif;
+    font-size: 14px;
+    color: var(--text-light);
+  }
+
+  .charts-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .chart-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 28px;
+    animation: fadeUp 0.4s ease-out both;
+    transition: box-shadow 0.3s;
+  }
+
+  .chart-card:hover { box-shadow: var(--shadow-hover); }
+
+  .chart-card-header {
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .chart-card-header h3 {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
+  }
+
+  .chart-card-header .unit {
+    font-family: 'Source Serif 4', serif;
+    font-size: 13px;
+    color: var(--text-light);
+    font-style: italic;
+  }
+
+  .chart-area { position: relative; }
+
+  .bar-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 14px;
+    gap: 12px;
+  }
+
+  .bar-label {
+    width: 100px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-align: right;
+    flex-shrink: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .bar-track {
+    flex: 1;
+    height: 28px;
+    background: var(--bg);
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    position: relative;
+    min-width: 2px;
+    transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .bar-fill.animate {
+    animation: growBar 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  }
+
+  @keyframes growBar { from { width: 0 !important; } }
+
+  .bar-value {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    width: 80px;
+    text-align: right;
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .category-divider {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-light);
+    padding: 8px 0 4px;
+    margin-top: 8px;
+  }
+
+  .bar-category-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-light);
+    padding: 6px 0 2px;
+    margin-left: 112px;
+  }
+
+  .bar-category-label:first-child {
+    padding-top: 0;
+  }
+
+  .matrix-category-row td {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-light);
+    padding: 12px 12px 6px !important;
+    border-bottom: none !important;
+    background: var(--bg-card) !important;
+  }
+
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 80px 40px;
+    animation: fadeUp 0.4s ease-out;
+  }
+
+  .empty-state .empty-mark {
+    font-family: 'Source Serif 4', serif;
+    font-size: 64px;
+    font-weight: 300;
+    color: var(--border);
+    line-height: 1;
+    margin-bottom: 16px;
+  }
+
+  .empty-state p {
+    font-family: 'Source Serif 4', serif;
+    font-size: 16px;
+    color: var(--text-light);
+    max-width: 360px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* Tooltip */
+  .tooltip {
+    position: absolute;
+    background: var(--text);
+    color: var(--bg);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 4px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 100;
+    white-space: nowrap;
+    transform: translateX(-50%);
+  }
+
+  .tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: var(--text);
+  }
+
+  .tooltip.visible { opacity: 1; }
+
+  /* Footer */
+  footer {
+    padding: 24px 0;
+    border-top: 1px solid var(--rule);
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-light);
+    font-family: 'Source Serif 4', serif;
+  }
+
+  /* Hidden file input */
+  #import-file { display: none; }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    header h1 { font-size: 32px; }
+    .import-row { flex-direction: column; }
+    .field input, .field select { width: 100%; }
+    .container { padding: 0 20px; }
+    .score-matrix input[type="number"] { width: 80px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>Benchmark Studio</h1>
+    <p>Define benchmarks, add devices, compare anything</p>
+  </header>
+
+  <section class="import-section">
+    <h2>Benchmarks</h2>
+    <div class="import-card">
+      <div class="import-row">
+        <div class="field">
+          <label for="bm-name">Name</label>
+          <input type="text" id="bm-name" placeholder="e.g. Cinebench R24" style="width: 200px;">
+        </div>
+        <div class="field">
+          <label for="bm-unit">Unit</label>
+          <input type="text" id="bm-unit" placeholder="e.g. pts" style="width: 100px;">
+        </div>
+        <div class="toggle-field">
+          <label>Higher is Better</label>
+          <label class="toggle-switch">
+            <input type="checkbox" id="bm-hib" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <button class="btn btn-primary" onclick="addBenchmark()">Add Benchmark</button>
+      </div>
+    </div>
+    <div class="devices-bar" id="benchmarks-bar"></div>
+  </section>
+
+  <section class="import-section">
+    <h2>Devices</h2>
+    <div class="import-card">
+      <div class="import-row">
+        <div class="field">
+          <label for="dev-name">Device Name</label>
+          <input type="text" id="dev-name" placeholder="e.g. MacBook Pro M4 Max">
+        </div>
+        <div class="field">
+          <label for="dev-category">Category <span style="font-weight:400; text-transform:none; letter-spacing:0">(optional)</span></label>
+          <input type="text" id="dev-category" placeholder="e.g. Laptop" style="width: 140px;">
+        </div>
+        <button class="btn btn-primary" onclick="addDevice()">Add Device</button>
+      </div>
+    </div>
+    <div class="devices-bar" id="devices-bar"></div>
+  </section>
+
+  <section class="import-section">
+    <h2>Scores</h2>
+    <div class="import-card">
+      <div class="matrix-wrapper" id="matrix-wrapper"></div>
+      <div class="matrix-actions">
+        <button class="btn btn-secondary" onclick="exportJSON()">Export JSON</button>
+        <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()">Import JSON</button>
+        <button class="btn btn-danger" onclick="clearAll()">Clear All</button>
+      </div>
+    </div>
+    <input type="file" id="import-file" accept=".json" onchange="importJSON(event)">
+  </section>
+
+  <section class="charts-section">
+    <div class="charts-header">
+      <h2>Results</h2>
+      <span class="chart-count" id="chart-count"></span>
+    </div>
+    <div id="charts-container">
+      <div class="empty-state">
+        <div class="empty-mark">&mdash;</div>
+        <p>Add benchmarks and devices above, then enter scores to see comparisons.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <div class="container">Benchmark Studio</div>
+</footer>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+const eyeIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><path d="M247.31,124.76c-.35-.79-8.82-19.58-27.65-38.41C194.57,61.26,162.88,48,128,48S61.43,61.26,36.34,86.35C17.51,105.18,9,124,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208s66.57-13.26,91.66-38.34c18.83-18.83,27.3-37.61,27.65-38.4A8,8,0,0,0,247.31,124.76ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.47,133.47,0,0,1,25,128,133.33,133.33,0,0,1,48.07,97.25C70.33,75.19,97.22,64,128,64s57.67,11.19,79.93,33.25A133.46,133.46,0,0,1,231.05,128C223.84,141.46,192.43,192,128,192Zm0-112a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Z"></path></svg>`;
+const eyeSlashIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><path d="M53.92,34.62A8,8,0,1,0,42.08,45.38L61.32,66.55C25,88.84,9.38,123.2,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208a127.11,127.11,0,0,0,52.07-10.83l22,24.21a8,8,0,1,0,11.84-10.76Zm47.33,75.84,41.67,45.85a32,32,0,0,1-41.67-45.85ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.16,133.16,0,0,1,25,128c4.69-8.79,19.66-33.39,47.35-49.38l18,19.75a48,48,0,0,0,63.66,70l14.73,16.2A112,112,0,0,1,128,192Zm6-95.43a8,8,0,0,1,3-15.72,48.16,48.16,0,0,1,38.77,42.64,8,8,0,0,1-7.22,8.71,6.39,6.39,0,0,1-.75,0,8,8,0,0,1-8-7.26A32.09,32.09,0,0,0,134,96.57Zm113.28,34.69c-.42.94-10.55,23.37-33.36,43.8a8,8,0,1,1-10.67-11.92A132.77,132.77,0,0,0,231.05,128a133.15,133.15,0,0,0-23.12-30.77C185.67,75.19,158.78,64,128,64a118.37,118.37,0,0,0-19.36,1.57A8,8,0,1,1,106,49.79,134,134,0,0,1,128,48c34.88,0,66.57,13.26,91.66,38.35,18.83,18.83,27.3,37.62,27.65,38.41A8,8,0,0,1,247.31,131.26Z"></path></svg>`;
+
+const DEVICE_COLORS = [
+  '#ff6b4a', '#2d5bff', '#f5a623', '#00b4a0',
+  '#9b59b6', '#e84393', '#636e72', '#00cec9'
+];
+
+// Separate color palette for benchmark pills so they don't clash with device colors in charts
+const BENCHMARK_COLORS = [
+  '#8b5cf6', '#06b6d4', '#f97316', '#84cc16',
+  '#ec4899', '#14b8a6', '#a855f7', '#eab308'
+];
+
+let state = loadState();
+
+function generateId(prefix) {
+  return prefix + '_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+}
+
+function saveState() {
+  localStorage.setItem('benchmark-studio-data', JSON.stringify({
+    benchmarks: state.benchmarks,
+    devices: state.devices,
+    scores: state.scores
+  }));
+}
+
+function loadState() {
+  try {
+    const data = JSON.parse(localStorage.getItem('benchmark-studio-data'));
+    if (data && Array.isArray(data.benchmarks) && Array.isArray(data.devices) && Array.isArray(data.scores)) {
+      return data;
+    }
+  } catch(e) {}
+  return { benchmarks: [], devices: [], scores: [] };
+}
+
+function getDeviceColor(index) {
+  return DEVICE_COLORS[index % DEVICE_COLORS.length];
+}
+
+function getBenchmarkColor(index) {
+  return BENCHMARK_COLORS[index % BENCHMARK_COLORS.length];
+}
+
+function getScore(benchmarkId, deviceId) {
+  const s = state.scores.find(s => s.benchmarkId === benchmarkId && s.deviceId === deviceId);
+  return s ? s.value : null;
+}
+
+function updateScore(benchmarkId, deviceId, value) {
+  const idx = state.scores.findIndex(s => s.benchmarkId === benchmarkId && s.deviceId === deviceId);
+  if (value === null || value === '' || isNaN(value)) {
+    if (idx !== -1) state.scores.splice(idx, 1);
+  } else {
+    const numVal = parseFloat(value);
+    if (idx !== -1) {
+      state.scores[idx].value = numVal;
+    } else {
+      state.scores.push({ benchmarkId, deviceId, value: numVal });
+    }
+  }
+  saveState();
+  renderCharts();
+}
+
+// ── Benchmark CRUD ──
+
+function addBenchmark() {
+  const nameEl = document.getElementById('bm-name');
+  const unitEl = document.getElementById('bm-unit');
+  const hibEl = document.getElementById('bm-hib');
+
+  const name = nameEl.value.trim();
+  const unit = unitEl.value.trim();
+
+  if (!name) { nameEl.focus(); nameEl.style.borderColor = '#e74c3c'; setTimeout(() => nameEl.style.borderColor = '', 1500); return; }
+  if (!unit) { unitEl.focus(); unitEl.style.borderColor = '#e74c3c'; setTimeout(() => unitEl.style.borderColor = '', 1500); return; }
+
+  state.benchmarks.push({
+    id: generateId('bm'),
+    name,
+    unit,
+    higherIsBetter: hibEl.checked,
+    order: state.benchmarks.length,
+    hidden: false
+  });
+  saveState();
+
+  nameEl.value = '';
+  unitEl.value = '';
+  hibEl.checked = true;
+  nameEl.focus();
+  renderAll();
+}
+
+function removeBenchmark(id) {
+  state.benchmarks = state.benchmarks.filter(b => b.id !== id);
+  state.scores = state.scores.filter(s => s.benchmarkId !== id);
+  reorderArray(state.benchmarks);
+  saveState();
+  renderAll();
+}
+
+function toggleBenchmarkVisibility(id) {
+  const bm = state.benchmarks.find(b => b.id === id);
+  if (bm) bm.hidden = !bm.hidden;
+  saveState();
+  renderAll();
+}
+
+function startRenameBenchmark(id, el) {
+  const bm = state.benchmarks.find(b => b.id === id);
+  if (!bm) return;
+  startRename(el, bm.name, newName => {
+    bm.name = newName;
+    saveState();
+    renderAll();
+  });
+}
+
+// ── Device CRUD ──
+
+function addDevice() {
+  const nameEl = document.getElementById('dev-name');
+  const catEl = document.getElementById('dev-category');
+  const name = nameEl.value.trim();
+
+  if (!name) { nameEl.focus(); nameEl.style.borderColor = '#e74c3c'; setTimeout(() => nameEl.style.borderColor = '', 1500); return; }
+
+  state.devices.push({
+    id: generateId('dev'),
+    name,
+    category: catEl.value.trim() || '',
+    order: state.devices.length,
+    hidden: false
+  });
+  saveState();
+
+  nameEl.value = '';
+  catEl.value = '';
+  nameEl.focus();
+  renderAll();
+}
+
+function removeDevice(id) {
+  state.devices = state.devices.filter(d => d.id !== id);
+  state.scores = state.scores.filter(s => s.deviceId !== id);
+  reorderArray(state.devices);
+  saveState();
+  renderAll();
+}
+
+function toggleDeviceVisibility(id) {
+  const dev = state.devices.find(d => d.id === id);
+  if (dev) dev.hidden = !dev.hidden;
+  saveState();
+  renderAll();
+}
+
+function startRenameDevice(id, el) {
+  const dev = state.devices.find(d => d.id === id);
+  if (!dev) return;
+  startRename(el, dev.name, newName => {
+    dev.name = newName;
+    saveState();
+    renderAll();
+  });
+}
+
+// ── Shared helpers ──
+
+function reorderArray(arr) {
+  arr.forEach((item, i) => item.order = i);
+}
+
+function startRename(el, currentName, onCommit) {
+  const pill = el.closest('.device-pill');
+  const input = document.createElement('input');
+  input.className = 'rename-input';
+  input.value = currentName;
+  el.replaceWith(input);
+  input.focus();
+  input.select();
+  if (pill) pill.setAttribute('draggable', 'false');
+
+  let committed = false;
+  function commit() {
+    if (committed) return;
+    committed = true;
+    const newName = input.value.trim();
+    onCommit(newName || currentName);
+  }
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); commit(); }
+    if (e.key === 'Escape') { committed = true; onCommit(currentName); }
+  });
+  input.addEventListener('blur', commit);
+}
+
+function formatNumber(n) {
+  if (n === null || n === undefined) return '--';
+  if (n >= 1000000) return (n / 1000000).toFixed(2) + 'M';
+  if (n >= 10000) return (n / 1000).toFixed(1) + 'k';
+  if (n >= 1000) return (n / 1000).toFixed(2) + 'k';
+  if (Number.isInteger(n)) return n.toLocaleString();
+  return n.toFixed(2);
+}
+
+function escapeHTML(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function showTooltip(e, text) {
+  const tip = document.getElementById('tooltip');
+  tip.textContent = text;
+  tip.classList.add('visible');
+  const rect = e.currentTarget.getBoundingClientRect();
+  tip.style.left = (rect.left + rect.width / 2) + 'px';
+  tip.style.top = (rect.top - 8) + 'px';
+}
+
+function hideTooltip() {
+  document.getElementById('tooltip').classList.remove('visible');
+}
+
+// ── Drag and Drop ──
+
+let dragSrcIndex = null;
+
+function initDragAndDrop(container, dataArray, onDone) {
+  const pills = container.querySelectorAll('.device-pill[draggable]');
+  pills.forEach(pill => {
+    pill.addEventListener('dragstart', e => {
+      dragSrcIndex = parseInt(pill.dataset.index);
+      pill.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    pill.addEventListener('dragend', () => {
+      pill.classList.remove('dragging');
+      pills.forEach(p => p.classList.remove('drag-over'));
+      dragSrcIndex = null;
+    });
+    pill.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      pill.classList.add('drag-over');
+    });
+    pill.addEventListener('dragleave', () => pill.classList.remove('drag-over'));
+    pill.addEventListener('drop', e => {
+      e.preventDefault();
+      const targetIndex = parseInt(pill.dataset.index);
+      if (dragSrcIndex !== null && dragSrcIndex !== targetIndex) {
+        const [moved] = dataArray.splice(dragSrcIndex, 1);
+        dataArray.splice(targetIndex, 0, moved);
+        reorderArray(dataArray);
+        saveState();
+        onDone();
+      }
+    });
+  });
+}
+
+// ── Render: Pills ──
+
+function renderBenchmarkPills() {
+  const bar = document.getElementById('benchmarks-bar');
+  if (state.benchmarks.length === 0) { bar.innerHTML = ''; return; }
+  bar.innerHTML = state.benchmarks.map((b, i) => `
+    <span class="device-pill${b.hidden ? ' hidden-device' : ''}" draggable="true" data-index="${i}" style="border-color: ${getBenchmarkColor(i)}30">
+      <span class="drag-handle">\u2807</span>
+      <span class="device-dot" style="background: ${getBenchmarkColor(i)}"></span>
+      <span class="device-name" onclick="startRenameBenchmark('${b.id}', this)" title="Click to rename">${escapeHTML(b.name)}</span>
+      <button class="toggle-visibility" onclick="toggleBenchmarkVisibility('${b.id}')" title="${b.hidden ? 'Show' : 'Hide'}">${b.hidden ? eyeSlashIcon : eyeIcon}</button>
+      <button class="remove-device" onclick="removeBenchmark('${b.id}')" title="Remove">&times;</button>
+    </span>
+  `).join('');
+  initDragAndDrop(bar, state.benchmarks, renderAll);
+}
+
+function renderDevicePills() {
+  const bar = document.getElementById('devices-bar');
+  if (state.devices.length === 0) { bar.innerHTML = ''; return; }
+  bar.innerHTML = state.devices.map((d, i) => `
+    <span class="device-pill${d.hidden ? ' hidden-device' : ''}" draggable="true" data-index="${i}" style="border-color: ${getDeviceColor(i)}30">
+      <span class="drag-handle">\u2807</span>
+      <span class="device-dot" style="background: ${getDeviceColor(i)}"></span>
+      <span class="device-name" onclick="startRenameDevice('${d.id}', this)" title="Click to rename">${escapeHTML(d.name)}</span>
+      ${d.category ? `<span class="pill-category">${escapeHTML(d.category)}</span>` : ''}
+      <button class="toggle-visibility" onclick="toggleDeviceVisibility('${d.id}')" title="${d.hidden ? 'Show' : 'Hide'}">${d.hidden ? eyeSlashIcon : eyeIcon}</button>
+      <button class="remove-device" onclick="removeDevice('${d.id}')" title="Remove">&times;</button>
+    </span>
+  `).join('');
+  initDragAndDrop(bar, state.devices, renderAll);
+}
+
+// ── Render: Score Matrix ──
+
+function renderScoreMatrix() {
+  const wrapper = document.getElementById('matrix-wrapper');
+  const visibleBenchmarks = state.benchmarks.filter(b => !b.hidden);
+  const visibleDevices = state.devices.filter(d => !d.hidden);
+
+  if (visibleBenchmarks.length === 0 || visibleDevices.length === 0) {
+    wrapper.innerHTML = `<div class="matrix-empty">Add benchmarks and devices to start entering scores.</div>`;
+    return;
+  }
+
+  const headerCells = '<th>Device</th>' + visibleBenchmarks.map(b =>
+    `<th>${escapeHTML(b.name)}<span class="unit-hint">${escapeHTML(b.unit)}</span></th>`
+  ).join('');
+
+  // Group devices by category for matrix rows
+  const matrixCategories = new Map();
+  visibleDevices.forEach((d, di) => {
+    const cat = d.category || '';
+    if (!matrixCategories.has(cat)) matrixCategories.set(cat, []);
+    matrixCategories.get(cat).push({ device: d, colorIndex: di });
+  });
+  const hasMatrixCategories = matrixCategories.size > 1 || (matrixCategories.size === 1 && !matrixCategories.has(''));
+
+  let bodyRows = '';
+  for (const [cat, catDevices] of matrixCategories) {
+    if (hasMatrixCategories && cat) {
+      bodyRows += `<tr class="matrix-category-row"><td colspan="${visibleBenchmarks.length + 1}">${escapeHTML(cat)}</td></tr>`;
+    }
+    catDevices.forEach(({ device: d, colorIndex: di }) => {
+      const cells = visibleBenchmarks.map(b => {
+        const val = getScore(b.id, d.id);
+        return `<td><input type="number" data-benchmark-id="${b.id}" data-device-id="${d.id}" value="${val !== null ? val : ''}" placeholder="\u2014" step="any"></td>`;
+      }).join('');
+      bodyRows += `<tr>
+        <td><div class="device-cell"><span class="device-dot" style="background: ${getDeviceColor(di)}"></span>${escapeHTML(d.name)}</div></td>
+        ${cells}
+      </tr>`;
+    });
+  }
+
+  wrapper.innerHTML = `
+    <table class="score-matrix">
+      <thead><tr>${headerCells}</tr></thead>
+      <tbody>${bodyRows}</tbody>
+    </table>`;
+
+  // Event delegation for score inputs
+  const table = wrapper.querySelector('table');
+  table.addEventListener('change', handleScoreChange);
+  table.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      e.target.blur();
+    }
+  });
+}
+
+function handleScoreChange(e) {
+  const input = e.target;
+  if (input.tagName !== 'INPUT') return;
+  const bmId = input.dataset.benchmarkId;
+  const devId = input.dataset.deviceId;
+  if (!bmId || !devId) return;
+  updateScore(bmId, devId, input.value);
+}
+
+// ── Render: Charts ──
+
+function renderCharts() {
+  const container = document.getElementById('charts-container');
+  const countEl = document.getElementById('chart-count');
+
+  const visibleBenchmarks = state.benchmarks.filter(b => !b.hidden);
+  const visibleDevices = state.devices.filter(d => !d.hidden);
+
+  // Check if there are any scores to display
+  const hasScores = visibleBenchmarks.some(bm =>
+    visibleDevices.some(dev => getScore(bm.id, dev.id) !== null)
+  );
+
+  if (visibleBenchmarks.length === 0 || visibleDevices.length === 0 || !hasScores) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-mark">&mdash;</div>
+        <p>Add benchmarks and devices above, then enter scores to see comparisons.</p>
+      </div>`;
+    countEl.textContent = '';
+    return;
+  }
+
+  // Count benchmarks with at least one score
+  const activeBenchmarks = visibleBenchmarks.filter(bm =>
+    visibleDevices.some(dev => getScore(bm.id, dev.id) !== null)
+  );
+  const deviceCount = visibleDevices.length;
+  countEl.textContent = `${activeBenchmarks.length} benchmark${activeBenchmarks.length !== 1 ? 's' : ''} across ${deviceCount} device${deviceCount !== 1 ? 's' : ''}`;
+
+  // Group devices by category for display within each chart
+  const deviceCategories = new Map();
+  visibleDevices.forEach((dev, di) => {
+    const cat = dev.category || '';
+    if (!deviceCategories.has(cat)) deviceCategories.set(cat, []);
+    deviceCategories.get(cat).push({ device: dev, colorIndex: di });
+  });
+  const hasDeviceCategories = deviceCategories.size > 1 || (deviceCategories.size === 1 && !deviceCategories.has(''));
+
+  let chartIndex = 0;
+  let html = '<div class="charts-grid">';
+
+  activeBenchmarks.forEach(bm => {
+    const entries = [];
+    visibleDevices.forEach((dev, di) => {
+      const val = getScore(bm.id, dev.id);
+      if (val !== null) {
+        entries.push({ device: dev, value: val, colorIndex: di });
+      }
+    });
+
+    if (entries.length === 0) return;
+
+    const maxVal = Math.max(...entries.map(e => e.value), 0.001);
+
+    let barsHTML = '';
+    if (hasDeviceCategories) {
+      // Render bars grouped by device category
+      let barIdx = 0;
+      for (const [cat, catDevices] of deviceCategories) {
+        const catEntries = catDevices
+          .map(cd => entries.find(e => e.device.id === cd.device.id))
+          .filter(Boolean);
+        if (catEntries.length === 0) continue;
+        if (cat) {
+          barsHTML += `<div class="bar-category-label">${escapeHTML(cat)}</div>`;
+        }
+        catEntries.forEach(e => {
+          const pct = (e.value / maxVal) * 100;
+          const color = getDeviceColor(e.colorIndex);
+          barsHTML += `
+            <div class="bar-group"
+                 onmouseenter="showTooltip(event, '${escapeHTML(e.device.name)}: ${formatNumber(e.value)} ${escapeHTML(bm.unit)}')"
+                 onmouseleave="hideTooltip()">
+              <span class="bar-label" title="${escapeHTML(e.device.name)}">${escapeHTML(e.device.name)}</span>
+              <div class="bar-track">
+                <div class="bar-fill animate" style="width:${pct}%; background:${color}; animation-delay:${chartIndex * 0.08 + barIdx * 0.05}s"></div>
+              </div>
+              <span class="bar-value">${formatNumber(e.value)}</span>
+            </div>`;
+          barIdx++;
+        });
+      }
+    } else {
+      barsHTML = entries.map((e, ei) => {
+        const pct = (e.value / maxVal) * 100;
+        const color = getDeviceColor(e.colorIndex);
+        return `
+          <div class="bar-group"
+               onmouseenter="showTooltip(event, '${escapeHTML(e.device.name)}: ${formatNumber(e.value)} ${escapeHTML(bm.unit)}')"
+               onmouseleave="hideTooltip()">
+            <span class="bar-label" title="${escapeHTML(e.device.name)}">${escapeHTML(e.device.name)}</span>
+            <div class="bar-track">
+              <div class="bar-fill animate" style="width:${pct}%; background:${color}; animation-delay:${chartIndex * 0.08 + ei * 0.05}s"></div>
+            </div>
+            <span class="bar-value">${formatNumber(e.value)}</span>
+          </div>`;
+      }).join('');
+    }
+
+    html += `
+      <div class="chart-card" style="animation-delay:${chartIndex * 0.06}s">
+        <div class="chart-card-header">
+          <h3>${escapeHTML(bm.name)}</h3>
+          <span class="unit">${escapeHTML(bm.unit)} &middot; ${bm.higherIsBetter ? 'higher is better' : 'lower is better'}</span>
+        </div>
+        <div class="chart-area">
+          ${barsHTML}
+        </div>
+      </div>`;
+
+    chartIndex++;
+  });
+
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// ── Import / Export ──
+
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'benchmark-studio-data.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!Array.isArray(data.benchmarks) || !Array.isArray(data.devices) || !Array.isArray(data.scores)) {
+        alert('Invalid file format. Expected benchmark-studio JSON export.');
+        return;
+      }
+      state = data;
+      saveState();
+      renderAll();
+    } catch(err) {
+      alert('Failed to parse JSON file.');
+    }
+  };
+  reader.readAsText(file);
+  // Reset file input so the same file can be re-imported
+  event.target.value = '';
+}
+
+function clearAll() {
+  if (state.benchmarks.length === 0 && state.devices.length === 0) return;
+  if (!confirm('Clear all benchmarks, devices, and scores?')) return;
+  state = { benchmarks: [], devices: [], scores: [] };
+  saveState();
+  renderAll();
+}
+
+// ── Render All ──
+
+function renderAll() {
+  renderBenchmarkPills();
+  renderDevicePills();
+  renderScoreMatrix();
+  renderCharts();
+}
+
+// ── Init ──
+renderAll();
+
+// Handle Enter key in add forms
+document.getElementById('bm-name').addEventListener('keydown', e => { if (e.key === 'Enter') addBenchmark(); });
+document.getElementById('bm-unit').addEventListener('keydown', e => { if (e.key === 'Enter') addBenchmark(); });
+document.getElementById('dev-name').addEventListener('keydown', e => { if (e.key === 'Enter') addDevice(); });
+document.getElementById('dev-category').addEventListener('keydown', e => { if (e.key === 'Enter') addDevice(); });
+</script>
+</body>
+</html>
