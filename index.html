@@ -83,7 +83,7 @@
 
   /* Sections */
   .import-section {
-    padding: 40px 0;
+    padding: 20px 0;
     border-bottom: 1px solid var(--rule);
   }
 
@@ -93,7 +93,66 @@
     text-transform: uppercase;
     letter-spacing: 1.5px;
     color: var(--text-muted);
-    margin-bottom: 24px;
+    margin-bottom: 0;
+  }
+
+  /* Collapsible sections */
+  .section-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+    padding: 4px 0;
+  }
+
+  .section-toggle:hover h2 {
+    color: var(--text);
+  }
+
+  .section-chevron {
+    width: 16px;
+    height: 16px;
+    color: var(--text-light);
+    transition: transform 0.25s ease;
+    flex-shrink: 0;
+  }
+
+  .import-section.collapsed .section-chevron {
+    transform: rotate(-90deg);
+  }
+
+  .section-toggle:hover .section-chevron {
+    color: var(--text-muted);
+  }
+
+  .section-body {
+    overflow: hidden;
+    transition: grid-template-rows 0.3s ease, opacity 0.25s ease;
+    display: grid;
+    grid-template-rows: 1fr;
+  }
+
+  .section-body > div {
+    overflow: hidden;
+  }
+
+  .import-section.collapsed .section-body {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+
+  .import-section:not(.collapsed) .section-body {
+    margin-top: 20px;
+  }
+
+  .section-summary {
+    font-size: 12px;
+    color: var(--text-light);
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    margin-left: 4px;
   }
 
   .import-card {
@@ -833,61 +892,82 @@
     <p>Define benchmarks, add devices, compare anything</p>
   </header>
 
-  <section class="import-section">
-    <h2>Benchmarks</h2>
-    <div class="import-card">
-      <div class="import-row">
-        <div class="field">
-          <label for="bm-name">Name</label>
-          <input type="text" id="bm-name" placeholder="e.g. Cinebench R24" style="width: 200px;">
+  <section class="import-section collapsed" id="section-benchmarks">
+    <div class="section-toggle" onclick="toggleSection('section-benchmarks')">
+      <svg class="section-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 4 10 8 6 12"/></svg>
+      <h2>Benchmarks <span class="section-summary" id="benchmarks-summary"></span></h2>
+    </div>
+    <div class="section-body">
+      <div>
+        <div class="import-card">
+          <div class="import-row">
+            <div class="field">
+              <label for="bm-name">Name</label>
+              <input type="text" id="bm-name" placeholder="e.g. Cinebench R24" style="width: 200px;">
+            </div>
+            <div class="field">
+              <label for="bm-unit">Unit</label>
+              <input type="text" id="bm-unit" placeholder="e.g. pts" style="width: 100px;">
+            </div>
+            <div class="toggle-field">
+              <label>Higher is Better</label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="bm-hib" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <button class="btn btn-primary" onclick="addBenchmark()">Add Benchmark</button>
+          </div>
         </div>
-        <div class="field">
-          <label for="bm-unit">Unit</label>
-          <input type="text" id="bm-unit" placeholder="e.g. pts" style="width: 100px;">
-        </div>
-        <div class="toggle-field">
-          <label>Higher is Better</label>
-          <label class="toggle-switch">
-            <input type="checkbox" id="bm-hib" checked>
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-        <button class="btn btn-primary" onclick="addBenchmark()">Add Benchmark</button>
+        <div class="devices-bar" id="benchmarks-bar"></div>
       </div>
     </div>
-    <div class="devices-bar" id="benchmarks-bar"></div>
   </section>
 
-  <section class="import-section">
-    <h2>Devices</h2>
-    <div class="import-card">
-      <div class="import-row">
-        <div class="field">
-          <label for="dev-name">Device Name</label>
-          <input type="text" id="dev-name" placeholder="e.g. MacBook Pro M4 Max">
+  <section class="import-section collapsed" id="section-devices">
+    <div class="section-toggle" onclick="toggleSection('section-devices')">
+      <svg class="section-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 4 10 8 6 12"/></svg>
+      <h2>Devices <span class="section-summary" id="devices-summary"></span></h2>
+    </div>
+    <div class="section-body">
+      <div>
+        <div class="import-card">
+          <div class="import-row">
+            <div class="field">
+              <label for="dev-name">Device Name</label>
+              <input type="text" id="dev-name" placeholder="e.g. MacBook Pro M4 Max">
+            </div>
+            <div class="field">
+              <label for="dev-category">Category <span style="font-weight:400; text-transform:none; letter-spacing:0">(optional)</span></label>
+              <input type="text" id="dev-category" placeholder="e.g. Laptop" style="width: 140px;">
+            </div>
+            <button class="btn btn-primary" onclick="addDevice()">Add Device</button>
+          </div>
         </div>
-        <div class="field">
-          <label for="dev-category">Category <span style="font-weight:400; text-transform:none; letter-spacing:0">(optional)</span></label>
-          <input type="text" id="dev-category" placeholder="e.g. Laptop" style="width: 140px;">
-        </div>
-        <button class="btn btn-primary" onclick="addDevice()">Add Device</button>
+        <div class="devices-bar" id="devices-bar"></div>
       </div>
     </div>
-    <div class="devices-bar" id="devices-bar"></div>
   </section>
 
-  <section class="import-section">
-    <h2>Scores</h2>
-    <div class="import-card">
-      <div class="matrix-wrapper" id="matrix-wrapper"></div>
-      <div class="matrix-actions">
-        <button class="btn btn-secondary" onclick="copyJSON(this)">Copy JSON</button>
-        <button class="btn btn-secondary" onclick="exportJSON()">Export JSON</button>
-        <button class="btn btn-secondary" onclick="openImportModal()">Import JSON</button>
-        <button class="btn btn-danger" onclick="clearAll()">Clear All</button>
+  <section class="import-section collapsed" id="section-scores">
+    <div class="section-toggle" onclick="toggleSection('section-scores')">
+      <svg class="section-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 4 10 8 6 12"/></svg>
+      <h2>Scores <span class="section-summary" id="scores-summary"></span></h2>
+    </div>
+    <div class="section-body">
+      <div>
+        <div class="import-card">
+          <div class="matrix-wrapper" id="matrix-wrapper"></div>
+          <div class="matrix-actions">
+            <button class="btn btn-secondary" onclick="copyJSON(this)">Copy JSON</button>
+            <button class="btn btn-secondary" onclick="exportJSON()">Export JSON</button>
+            <button class="btn btn-secondary" onclick="openImportModal()">Import JSON</button>
+            <button class="btn btn-danger" onclick="clearAll()">Clear All</button>
+          </div>
+        </div>
+        <input type="file" id="import-file" accept=".json" onchange="importJSONFile(event)">
       </div>
     </div>
-    <input type="file" id="import-file" accept=".json" onchange="importJSONFile(event)">
   </section>
 
   <!-- Import Modal -->
@@ -1555,6 +1635,22 @@ function clearAll() {
   renderAll();
 }
 
+// ── Collapsible Sections ──
+
+function toggleSection(id) {
+  document.getElementById(id).classList.toggle('collapsed');
+}
+
+function renderSectionSummaries() {
+  const bmCount = state.benchmarks.length;
+  const devCount = state.devices.length;
+  const scoreCount = state.scores.filter(s => s.value != null && s.value !== '').length;
+
+  document.getElementById('benchmarks-summary').textContent = bmCount ? `(${bmCount})` : '';
+  document.getElementById('devices-summary').textContent = devCount ? `(${devCount})` : '';
+  document.getElementById('scores-summary').textContent = scoreCount ? `(${scoreCount})` : '';
+}
+
 // ── Render All ──
 
 function renderAll() {
@@ -1562,6 +1658,7 @@ function renderAll() {
   renderDevicePills();
   renderScoreMatrix();
   renderCharts();
+  renderSectionSummaries();
 }
 
 // ── Init ──
