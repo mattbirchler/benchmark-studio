@@ -703,6 +703,118 @@
   /* Hidden file input */
   #import-file { display: none; }
 
+  /* Import modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    animation: modalFadeIn 0.2s ease-out;
+  }
+  .modal-overlay.active { display: flex; }
+
+  @keyframes modalFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+    width: 560px;
+    max-width: 90vw;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    animation: fadeUp 0.3s ease-out;
+  }
+
+  .modal-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .modal-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .modal-body {
+    padding: 20px 24px;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .modal-body textarea {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 13px;
+    width: 100%;
+    min-height: 120px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+    color: var(--text);
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .modal-body textarea:focus {
+    border-color: #2d5bff;
+    box-shadow: 0 0 0 3px rgba(45,91,255,0.1);
+  }
+
+  .modal-body textarea.invalid {
+    border-color: #e74c3c;
+    box-shadow: 0 0 0 3px rgba(231,76,60,0.1);
+  }
+
+  .import-preview {
+    margin-top: 16px;
+    padding: 16px;
+    background: var(--bg);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius);
+    font-size: 14px;
+    color: var(--text);
+  }
+
+  .import-preview .preview-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+  }
+
+  .import-preview .preview-label {
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  .import-preview .preview-value {
+    font-weight: 600;
+  }
+
+  .import-error {
+    margin-top: 12px;
+    color: #e74c3c;
+    font-size: 13px;
+  }
+
+  .modal-footer {
+    padding: 16px 24px 20px;
+    border-top: 1px solid var(--border-light);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+
   /* Responsive */
   @media (max-width: 768px) {
     header h1 { font-size: 32px; }
@@ -769,13 +881,32 @@
     <div class="import-card">
       <div class="matrix-wrapper" id="matrix-wrapper"></div>
       <div class="matrix-actions">
+        <button class="btn btn-secondary" onclick="copyJSON(this)">Copy JSON</button>
         <button class="btn btn-secondary" onclick="exportJSON()">Export JSON</button>
-        <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()">Import JSON</button>
+        <button class="btn btn-secondary" onclick="openImportModal()">Import JSON</button>
         <button class="btn btn-danger" onclick="clearAll()">Clear All</button>
       </div>
     </div>
-    <input type="file" id="import-file" accept=".json" onchange="importJSON(event)">
+    <input type="file" id="import-file" accept=".json" onchange="importJSONFile(event)">
   </section>
+
+  <!-- Import Modal -->
+  <div class="modal-overlay" id="import-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Import Data</h3>
+      </div>
+      <div class="modal-body">
+        <textarea id="import-textarea" placeholder="Paste your JSON here..."></textarea>
+        <div id="import-preview"></div>
+        <div id="import-error" class="import-error"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeImportModal()">Cancel</button>
+        <button class="btn btn-primary" id="import-confirm-btn" onclick="confirmImport()" disabled>Overwrite &amp; Import</button>
+      </div>
+    </div>
+  </div>
 
   <section class="charts-section">
     <div class="charts-header">
@@ -1285,7 +1416,16 @@ function renderCharts() {
   container.innerHTML = html;
 }
 
-// ── Import / Export ──
+// ── Copy / Import / Export ──
+
+function copyJSON(btn) {
+  const json = JSON.stringify(state, null, 2);
+  navigator.clipboard.writeText(json).then(() => {
+    const original = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = original; }, 1500);
+  });
+}
 
 function exportJSON() {
   const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
@@ -1297,29 +1437,115 @@ function exportJSON() {
   URL.revokeObjectURL(url);
 }
 
-function importJSON(event) {
+// File-based import (kept for the hidden file input)
+function importJSONFile(event) {
   const file = event.target.files[0];
   if (!file) return;
-
   const reader = new FileReader();
   reader.onload = function(e) {
-    try {
-      const data = JSON.parse(e.target.result);
-      if (!Array.isArray(data.benchmarks) || !Array.isArray(data.devices) || !Array.isArray(data.scores)) {
-        alert('Invalid file format. Expected benchmark-studio JSON export.');
-        return;
-      }
-      state = data;
-      saveState();
-      renderAll();
-    } catch(err) {
-      alert('Failed to parse JSON file.');
-    }
+    document.getElementById('import-textarea').value = e.target.result;
+    openImportModal();
+    validateImportJSON();
   };
   reader.readAsText(file);
-  // Reset file input so the same file can be re-imported
   event.target.value = '';
 }
+
+// ── Import Modal ──
+
+let pendingImportData = null;
+
+function openImportModal() {
+  const modal = document.getElementById('import-modal');
+  modal.classList.add('active');
+  const textarea = document.getElementById('import-textarea');
+  if (!textarea.value) {
+    textarea.value = '';
+    document.getElementById('import-preview').innerHTML = '';
+    document.getElementById('import-error').textContent = '';
+    document.getElementById('import-confirm-btn').disabled = true;
+    pendingImportData = null;
+  }
+  textarea.focus();
+}
+
+function closeImportModal() {
+  document.getElementById('import-modal').classList.remove('active');
+  document.getElementById('import-textarea').value = '';
+  document.getElementById('import-preview').innerHTML = '';
+  document.getElementById('import-error').textContent = '';
+  document.getElementById('import-confirm-btn').disabled = true;
+  pendingImportData = null;
+}
+
+function validateImportJSON() {
+  const textarea = document.getElementById('import-textarea');
+  const preview = document.getElementById('import-preview');
+  const error = document.getElementById('import-error');
+  const confirmBtn = document.getElementById('import-confirm-btn');
+  const raw = textarea.value.trim();
+
+  textarea.classList.remove('invalid');
+  error.textContent = '';
+  preview.innerHTML = '';
+  confirmBtn.disabled = true;
+  pendingImportData = null;
+
+  if (!raw) return;
+
+  try {
+    const data = JSON.parse(raw);
+    if (!Array.isArray(data.benchmarks) || !Array.isArray(data.devices) || !Array.isArray(data.scores)) {
+      throw new Error('Missing required fields: benchmarks, devices, and scores must be arrays.');
+    }
+
+    pendingImportData = data;
+    confirmBtn.disabled = false;
+
+    const scoreCount = data.scores.filter(s => s.value != null && s.value !== '').length;
+    preview.innerHTML = `
+      <div class="import-preview">
+        <div class="preview-row">
+          <span class="preview-label">Benchmarks</span>
+          <span class="preview-value">${data.benchmarks.length}</span>
+        </div>
+        <div class="preview-row">
+          <span class="preview-label">Devices</span>
+          <span class="preview-value">${data.devices.length}</span>
+        </div>
+        <div class="preview-row">
+          <span class="preview-label">Scores</span>
+          <span class="preview-value">${scoreCount}</span>
+        </div>
+      </div>`;
+  } catch(err) {
+    textarea.classList.add('invalid');
+    error.textContent = err.message;
+  }
+}
+
+function confirmImport() {
+  if (!pendingImportData) return;
+  state = pendingImportData;
+  saveState();
+  renderAll();
+  closeImportModal();
+}
+
+// Wire up textarea validation
+document.getElementById('import-textarea').addEventListener('input', validateImportJSON);
+
+// Close modal on overlay click
+document.getElementById('import-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeImportModal();
+});
+
+// Close modal on Escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && document.getElementById('import-modal').classList.contains('active')) {
+    closeImportModal();
+  }
+});
 
 function clearAll() {
   if (state.benchmarks.length === 0 && state.devices.length === 0) return;
